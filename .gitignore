@@ -1,1 +1,4 @@
 .venv
+build
+dist
+radicale_ldap_auth.egg-info
