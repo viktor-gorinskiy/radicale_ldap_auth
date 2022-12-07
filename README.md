@@ -10,9 +10,9 @@ LDAP authentication plugin for [Radicale](http://radicale.org/).
 
     [auth]
     type = radicale_ldap_auth
-    ldap_url = ldap://digi-dc01.corp.myservices.digital
+    ldap_url = ldap://examle.com
     ldap_port = 389
-    ldap_user_postfix = myservices.digital
+    ldap_user_postfix = examle.com
 
 ## License
 
