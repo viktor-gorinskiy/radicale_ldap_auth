@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
       name="radicale_ldap_auth",
       packages=["radicale_ldap_auth"],
-      version="0.0.1",
+      version="0.0.3",
       author="Viktor Gorinskiy",
       author_email="viktor@gorinskiy.ru",
       description="Плагин авторизации в radicale под доменными пользователями",

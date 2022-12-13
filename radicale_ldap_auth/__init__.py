@@ -1,5 +1,5 @@
 from radicale.auth import BaseAuth
-# from radicale.log import logger
+from radicale.log import logger
 import ldap
 
 PLUGIN_CONFIG_SCHEMA = {
@@ -16,23 +16,28 @@ class Auth(BaseAuth):
         super().__init__(configuration.copy(PLUGIN_CONFIG_SCHEMA))
 
     def login(self, user, password):
-        config_url = self.configuration.get("auth", "ldap_url")
-        config_port = self.configuration.get("auth", "ldap_port")
-        ldap_user_postfix = self.configuration.get("auth", "ldap_user_postfix")
+        url = self.configuration.get("auth", "ldap_url")
+        port = self.configuration.get("auth", "ldap_port")
 
-        ldap_url = f'{config_url}:{config_port}'
-        # logger.info("user attempt by %r with password %r",
-        #             user, password, ldap_url, ldap_user_postfix)
+        ldap_url = f'{url}:{port}'
         l = ldap.initialize(ldap_url)
         l.set_option(ldap.OPT_REFERRALS, 0)
-        while True:
-            try:
-                l.simple_bind_s(user, password)
-                break
-            except ldap.INVALID_CREDENTIALS as error:
-                if not '@' in user:
-                    user = f'{user}@{ldap_user_postfix}'
-                else:    
-                    return ""
-        l.unbind_s()
+        try:
+            l.simple_bind_s(user, password)
+        except ldap.INVALID_CREDENTIALS as error:
+            logger.error(error)
+            return ""
+        except ldap.SERVER_DOWN:
+            logger.error(f'LDAP SERVER_DOWN: {ldap_url}')
+            return ""
+        except ldap.LDAPError as error:
+            if type(error.message) == dict and error.message.has_key('desc'):
+                logger.error(f"Other LDAP error: {error.message['desc']}")
+                return ""
+            else:
+                logger.error(f"Other LDAP error: {error}")
+        finally:
+            logger.info(f"LDAP login : {user}")
+            l.unbind_s()
         return user.split('@')[0]
+
